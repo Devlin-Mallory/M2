@@ -38,6 +38,7 @@ export {
     "NoPrune"
 }
 
+protect ModTarget
 
 -------------
 -- pushFwd --
