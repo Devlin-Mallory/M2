@@ -38,6 +38,8 @@ export {
     "NoPrune"
 }
 
+protect ModTarget
+
 -------------
 -- pushFwd --
 -------------
@@ -55,7 +57,8 @@ pushFwd Matrix := Matrix => o -> d -> pushFwd(map(ring d, coefficientRing ring d
 --   mapf is a method that takes a ring element of B, and returns an element of pfB
 pushFwd RingMap := Sequence => o -> (f) ->
 (
-    B := target f;
+    B := f.cache.ModTarget ?? (target f)^1;
+    f.cache.ModTarget ??= B;
     pfB := pushFwd(f, module B, o);
     matB := pushforward' pfB_{0..numgens pfB - 1};
     ringpf := (b) -> (module B).cache#(pushforward, pfB) matrix b;
@@ -64,6 +67,14 @@ pushFwd RingMap := Sequence => o -> (f) ->
 )
 
 pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??= (
+    if isFreeModule N and rank N > 1 then N = directSum for i in degrees N list (ring N)^{-i};
+    if length components N > 1 then return directSumPf apply(components N, i->pushFwd(f,i));
+    if isFreeModule N and rank N == 1 and N =!= (target f)^1 then return shiftDegreesPf( - degrees N, pushFwd(f, (target f)^1));
+    --TODO: make this work
+
+
+
+
     A := source f;
     B := target f;
     B' := B / ann N;
@@ -117,7 +128,8 @@ pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??=
 pushFwd(RingMap, Matrix) := Matrix => o -> (f, F) -> (
     M := pushFwd(f, source F, o);
     N := pushFwd(f, target F, o);
-    map(N, M, pushforward(N, F * pushforward' M_{0..numgens M - 1}))
+    isoN := inducedMap (target (N.cache#pushforward')(N_0) , target F);
+    map(N, M, pushforward(N, isoN * F * pushforward' M_{0..numgens M - 1}))
 )
 
 -----------------
@@ -209,13 +221,15 @@ isModuleFinite RingMap := Boolean => (f) -> (
 makeModule = method()
 makeModule(Module, RingMap) := (N, f) -> (
     (matB, ringpf) := pushAuxHgs(f);
+
+
     N = prune N;
     auxN := ambient N/image relations N;
     A := source f;
     k := (numgens ambient N) * (numgens source matB);
     sourceGens := gens N ** matB;
     mp := if isHomogeneous f then
-        try(map(auxN, , f, sourceGens)) else map(auxN, A^k, f, sourceGens)
+        try(map(auxN, ,  f, sourceGens)) else map(auxN, A^k, f, sourceGens)
     else
         map(auxN, A^k, f, sourceGens);
 
@@ -237,6 +251,51 @@ makeModule(Module, RingMap) := (N, f) -> (
     );
 
     (M, pfmat', pf)
+)
+
+shiftDegreesPf = method()
+shiftDegreesPf(List, Module) := (d, M) -> (
+    if not M.cache#?pushforward' then error "expected module of the form pushFwd(N)";
+    if not length d == degreeLength ring M then error "incorrect degree length";
+    pf := M.cache#pushforward';
+    N := target pf matrix(M_0);
+    pfN := N.cache#(pushforward, M);
+    M' := M**(ring M)^d;
+    N' := N**(ring N)^d;
+    isoM := map(M, M', id_M);
+    isoN := map(N, N', id_N);
+    --TODO: why the induced map
+    M'.cache#pushforward' = (n -> (inverse isoN)*(pf(isoM *inducedMap(source isoM, target n) * n )));
+    N'.cache#(pushforward, M') = (n -> (inverse isoM)*pfN(isoN * n));
+    M' 
+)
+
+directSumPf = method()
+directSumPf(Module, Module) := (M1, M2) -> (
+    if not M1.cache#?pushforward' or not M2.cache#?pushforward' then error "expected modules of the form pushFwd(N)";
+    (pf1, pf2) := (M1.cache#pushforward', M2.cache#pushforward');
+    (N1, N2) := (target pf1 matrix(M1_0), target pf2 matrix(M2_0));
+    M := directSum(M1,M2); 
+    N := directSum(N1,N2); 
+    --N.cache#(pushforward, M) := 
+    M.cache#pushforward' = (n -> N_[0]*pf1(matrix( M^[0]*n)) + N_[1]*pf2(matrix( M^[1]*n)));
+    M
+)
+
+directSumPf(Module, Module) := (M1, M2) -> directSumPf{M1,M2}
+
+directSumPf(List) := L -> (
+    if not  all apply(L, i-> i.cache#?pushforward')  then error "expected modules of the form pushFwd(N)";
+    pfList  := apply(L, i->i.cache#pushforward');
+    r := length L;
+    NList := apply(r, i->(target pfList_i matrix((L_i)_0)));
+    pfNList  := apply(r, i -> (NList_i).cache#(pushforward, L_i));
+    M := directSum L;
+    N := directSum NList;
+    --N.cache#(pushforward, M) := 
+    M.cache#pushforward' = (n -> sum apply(r, i -> N_[i]*pfList_i(matrix(M^[i]*n))));
+    N.cache#(pushforward, M) = (n -> sum apply(r, i -> M_[i] * pfNList_i(matrix(N^[i]*n))));
+    M
 )
 
 -- what if B is an algebra over A (i.e. A is the coefficient ring of B)
