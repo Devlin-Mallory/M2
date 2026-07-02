@@ -688,8 +688,8 @@ algorithms#(annihilator, Module) = new MutableHashTable from {
     }
 
 -- Installing hooks for annihilator Module
-scan({Quotient, Intersection}, strategy ->
-    addHook(key := (annihilator, Module), algorithms#key#strategy, Strategy => strategy))
+scan({Quotient}, strategy ->
+  addHook(key := (annihilator, Module), algorithms#key#strategy, Strategy => strategy))
 
 --------------------------------------------------------------------
 ----- Development section
