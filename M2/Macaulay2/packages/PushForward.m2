@@ -38,7 +38,6 @@ export {
     "NoPrune"
 }
 
-protect ModTarget
 
 -------------
 -- pushFwd --
@@ -55,21 +54,32 @@ pushFwd Matrix := Matrix => o -> d -> pushFwd(map(ring d, coefficientRing ring d
 --   fB is B^1 as an A-module
 --   matB is the set of monomials in B that form a set of generators as an A-module
 --   mapf is a method that takes a ring element of B, and returns an element of pfB
-pushFwd RingMap := Sequence => o -> (f) ->
+pushFwd RingMap := Sequence => o -> (f) -> 
 (
-    B := f.cache.ModTarget ?? (target f)^1;
-    f.cache.ModTarget ??= B;
-    pfB := pushFwd(f, module B, o);
+    if not f.cache#?target then f.cache#target = (target f)^1;
+    f.cache#target.cache#target = true;
+    B := f.cache#target;
+
+    pfB := pushFwd(f, B, o);
     matB := pushforward' pfB_{0..numgens pfB - 1};
-    ringpf := (b) -> (module B).cache#(pushforward, pfB) matrix b;
+    ringpf := (b) -> (B).cache#(pushforward, pfB) matrix b;
 
     (pfB, matB, ringpf)
 )
 
+
 pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??= (
-    if isFreeModule N and rank N > 1 then N = directSum for i in degrees N list (ring N)^{-i};
+
+    if isFreeModule N and rank N > length components N then N = directSum for i in degrees N list (ring N)^{-i};
     if length components N > 1 then return directSumPf apply(components N, i->pushFwd(f,i));
-    if isFreeModule N and rank N == 1 and N =!= (target f)^1 then return shiftDegreesPf( - degrees N, pushFwd(f, (target f)^1));
+
+    if not N.cache#?target and isFreeModule N and rank N == 1 then(
+        if not f.cache#?target then f.cache#target = (target f)^1;
+        if not f.cache#target.cache#?target then f.cache#target.cache#target = true;
+        pB0 := pushFwd(f, f.cache#target, o);
+        shiftDegreesPf( - degrees N, pB0)) 
+
+    else(
     --TODO: make this work
 
 
@@ -122,7 +132,7 @@ pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??=
 
         N.cache#(pushFwd, f, o) = pfN
     )
-)
+))
 
 
 pushFwd(RingMap, Matrix) := Matrix => o -> (f, F) -> (
