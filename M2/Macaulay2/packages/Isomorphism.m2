@@ -90,6 +90,8 @@ randomMinimalDegreeHomomorphism(Matrix, Matrix, ZZ) := Matrix => (n,m,d) -> (
     map(coker n, coker m, matrix reshape(N0, M0, a), Degree => -d)
     )
 
+
+randomMinimalDegreeHomomorphism(Matrix, Matrix, ZZ) := Matrix => (n,m,d) -> map(coker n, coker m, random({-d}, coker n, coker m), Degree => -d)
 -----------------------------------------------------------------------------
 -- checkDegrees
 -----------------------------------------------------------------------------
@@ -277,6 +279,7 @@ isIsomorphic(Module, Module) := Boolean => o -> (N, M) -> (
 	if #sH == 0 then return false;
     	g = sum(sH, f-> random(kk)*homomorphism matrix f)
     );
+    
 
     if o.Homogeneous and not isHomogeneous g then return false;
 
