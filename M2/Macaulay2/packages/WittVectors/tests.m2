@@ -67,6 +67,7 @@ TEST ///
     W3S = witt(3,S)
     w1 = witt{x_1,x_2,x_3}
     assert(wittFrobenius(w1) == witt{x_1^5,x_2^5,x_3^5})
+    assert(wittFrobenius(2, w1) == witt{x_1^25,x_2^25,x_3^25})
 ///
 
 --TEST 6
@@ -371,6 +372,7 @@ R = ZZ/5[x,y]
 w = witt{x,y}
 assert(verschiebung w == witt({0_R, x, y}))
 assert(toList verschiebung w == {0_R, x, y})
+assert(verschiebung(2, w) == witt({0_R, 0_R, x, y}))
 -- on a length-1 element
 assert(verschiebung witt{x} == witt({0_R, x}))
 ///
