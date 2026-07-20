@@ -101,10 +101,12 @@ WittRingElement == ZZ := (w1, n) -> (
     w1 == n*witt({1_(unWitt ring w1)} | for i from 0 to wittLength ring w1 - 2 list 0)
 )
 
-verschiebung(WittRingElement) := ww -> (
+verschiebung(ZZ, WittRingElement) := (n, ww) -> (
     R := (ring ww).unWitt;
-    witt({0_R}|ww.tuple)
+    witt((for i from 1 to n list 0_R )|ww.tuple)
 )
+
+verschiebung(WittRingElement) := w -> verschiebung(1, w)
 
 truncate(ZZ, WittRingElement) :=  {} >> opts -> (n, w) -> (
     if length w<n then error "can't truncate to something longer";
@@ -351,31 +353,28 @@ WittRingMap WittRingElement := WittRingElement => (Wf, w) -> (
 
 ---
 
-wittFrobenius(WittQuotientRing) := WittRingMap => WPR -> (
+
+wittFrobenius(WittQuotientRing) :=
+wittFrobenius(WittPolynomialRing) := WittRingMap => WPR -> wittFrobenius(1, WPR)
+
+wittFrobenius(ZZ, WittQuotientRing) :=
+wittFrobenius(ZZ, WittPolynomialRing) := WittRingMap => (e, WPR) -> (
     R := WPR.unWitt;
     nn := wittLength(WPR);
     pp := char (R);
     Rvars := gens R;
-    Rvarsp := apply(Rvars, xx -> xx^pp);
-    frob := map(R, R, Rvarsp);
-    witt(nn, frob)
-)
-
-
-wittFrobenius(WittPolynomialRing) := WittRingMap => WPR -> (
-    R := WPR.unWitt;
-    nn := wittLength(WPR);
-    pp := char (R);
-    Rvars := gens R;
-    Rvarsp := apply(Rvars, xx -> xx^pp);
+    Rvarsp := apply(Rvars, xx -> xx^(pp^e));
     frob := map(R, R, Rvarsp);
     witt(nn, frob)
 )
 
 wittFrobenius(ZZ, Ring) := WittRingMap => (n, R) -> wittFrobenius(witt(n, R))
+wittFrobenius(ZZ, ZZ, Ring) := WittRingMap => (e, n, R) -> wittFrobenius(e, witt(n, R))
 
-wittFrobenius(WittRingElement) := WittRingElement => ww -> (
-    wF := wittFrobenius(ring(ww));
+wittFrobenius(WittRingElement) := WittRingElement => ww -> wittFrobenius(1, ww)
+
+wittFrobenius(ZZ, WittRingElement) := WittRingElement => (e, ww) -> (
+    wF := wittFrobenius(e, ring(ww));
     wF(ww)
 )
 
