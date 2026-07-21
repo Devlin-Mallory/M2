@@ -138,7 +138,7 @@ pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??=
 pushFwd(RingMap, Matrix) := Matrix => o -> (f, F) -> F.cache#(pushFwd, f, o) ??= (
     M := pushFwd(f, source F, o);
     N := pushFwd(f, target F, o);
-    isoN := inducedMap (target (N.cache#pushforward')(N_0) , target F);
+    isoN := inducedMap (target (N.cache#pushforward')(matrix N_0) , target F);
     map(N, M, pushforward(N, isoN * F * pushforward' M_{0..numgens M - 1}))
 )
 
