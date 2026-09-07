@@ -1129,15 +1129,15 @@ doc ///
 
 doc ///
     Key
-        createEquations
-        [createEquations, PerturbationTerm]
-        [createEquations, Homogeneous]
+        parametrizedLifts
+        [parametrizedLifts, PerturbationTerm]
+        [parametrizedLifts, Homogeneous]
     Headline
         Finds explicit equations satisfied by the parameters of a Frobenius lift up to a given degree
     Usage
-        J = createEquations(d, I)
-        J = createEquations(d, f)
-        J = createEquations(d, R)
+        J = parametrizedLifts(d, I)
+        J = parametrizedLifts(d, f)
+        J = parametrizedLifts(d, R)
     Inputs
         d: ZZ
         I: Ideal
@@ -1152,14 +1152,14 @@ doc ///
         Example
             S = (ZZ/2)[x,y]
             I = ideal(x*y)
-            J = createEquations(2, I)
+            J = parametrizedLifts(2, I)
         Text
             If one wants only to find the equations for homogeneous polynomials, one can use the Homogeneous option. One can specify a different lifting of I to W_2(k)[x_1..x_n] by using the PerturbationTerm option to specify the coefficients of p in the lift of the defining equations.
         Example
             S = (ZZ/2)[x,y]
             I = ideal(x*y)
-            J = createEquations(2, I,Homogeneous=>true,PerturbationTerm=>{0})
-            J = createEquations(2, I,Homogeneous=>true,PerturbationTerm=>{1}) -- no solutions!
+            J = parametrizedLifts(2, I,Homogeneous=>true,PerturbationTerm=>{0})
+            J = parametrizedLifts(2, I,Homogeneous=>true,PerturbationTerm=>{1}) -- no solutions!
 ///
 
 
