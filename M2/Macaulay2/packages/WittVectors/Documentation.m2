@@ -1200,7 +1200,7 @@ doc ///
         Text 
                 This forces the lift to be nontrivial. Here, it can give a couple of values like (x^2,0) or (0,y^2). 
         Text 
-                If there is no Frobenius lift, the algorithm will run without ending.  For example, if S/I is an elliptic curve, by Serre--Tate theory, there is only one (canonical) lifting of S/I that has a Frobenius morphism compatible with that of S/I; if one chooses the "wrong" lift of the equation, there will be no Frobenius lift.
+                If there is no Frobenius lift, the algorithm will run without ending.  For example, if S/I is an elliptic curve, by Serre-\-Tate theory, there is only one (canonical) lifting of S/I that has a Frobenius morphism compatible with that of S/I; if one chooses the "wrong" lift of the equation, there will be no Frobenius lift.
          Text 
                 One can also specify a different lift than the default one (which simply lifts the coefficients naively to W_2(k)) by using the PerturbationTerm option, which specifies coefficients of p in the lift of the defining equations
         Example
