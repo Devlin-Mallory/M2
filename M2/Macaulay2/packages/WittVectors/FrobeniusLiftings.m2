@@ -1,16 +1,33 @@
+
+isPTorsionFree = (I, p) -> (
+    R := ring ideal I;
+    (I : ideal(p * 1_R)) == (I + ideal(p * 1_R))
+)
+
+isLiftPTorsionFree = (J, L) -> (
+    p := char ring J;
+    A := ring J;
+    B := prune((ZZ/p^2)(monoid A)) ;
+    I := ideal for i from 0 to length L-1 list sub(J_i, B) + p*L_i;
+    (I : ideal(p * 1_B)) == (I + ideal(p * 1_B))
+)
+
+
 findFrobeniusLift = method(Options=>{Nontrivial => false, Homogeneous => false, Verbose => false, PerturbationTerm => null})
 
 findFrobeniusLift(ZZ, RingElement) := opts -> (d, f) -> findFrobeniusLift(d, ideal f, opts)
 findFrobeniusLift(ZZ, Ring) := opts -> (d, R) -> findFrobeniusLift(d, ideal R, opts)
 findFrobeniusLift(ZZ, Ideal) := opts -> (d, I) -> (
     S := ring I;
+    L := Options.PerturbationTerm ?? toList(numgens I:0);
+    if not isLiftPTorsionFree(I, L) then error "expected p-torsionfree lift";
     R := S/I;
     n := numgens S;
     J := findFrobeniusLiftConstraints(I, PerturbationTerm => opts.PerturbationTerm, Homogeneous => opts.Homogeneous);
     T := ring J;
     j := 0;
 
-    if not opts.Nontrivial then L := toList((n):0)
+    if not opts.Nontrivial then L = toList((n):0)
         else L = for i from 0 to n-1 list if opts.Homogeneous == false then sum for i from 0 to d list random(i, S) else random(d, S);
 
     while (evalMap(L, I, T))(J) != 0 or (opts.Nontrivial and unique apply(L, i -> sub(i, R)) == {0}) do (
@@ -30,6 +47,8 @@ findFrobeniusLiftConstraints(RingElement) := opts -> f -> findFrobeniusLiftConst
 findFrobeniusLiftConstraints(Ring) := opts -> R -> findFrobeniusLiftConstraints(ideal 0_R, opts)
 
 findFrobeniusLiftConstraints(Ideal) := opts -> I -> (
+    L := Options.PerturbationTerm ?? toList(numgens I:0);
+    if not isLiftPTorsionFree(I, L) then error "expected p-torsionfree lift";
     c := numgens I;
     fp := toList(c:0);
     if opts.PerturbationTerm =!= null  then(
@@ -81,10 +100,10 @@ expandFrobeniusConstraints(ZZ, Ideal) := opts -> (d, J) -> (
     expand I
 )
 
-createEquations = method(Options => {Homogeneous => false, PerturbationTerm => null})
-createEquations(ZZ, Ring) := opts -> (d, R) -> createEquations(d, ideal R, opts)
-createEquations(ZZ, RingElement) := opts -> (d, f) -> createEquations(d, ideal f, opts)
-createEquations(ZZ, Ideal) := opts -> (d, I) -> (
+parametrizedLifts = method(Options => {Homogeneous => false, PerturbationTerm => null})
+parametrizedLifts(ZZ, Ring) := opts -> (d, R) -> parametrizedLifts(d, ideal R, opts)
+parametrizedLifts(ZZ, RingElement) := opts -> (d, f) -> parametrizedLifts(d, ideal f, opts)
+parametrizedLifts(ZZ, Ideal) := opts -> (d, I) -> (
     G := expandFrobeniusConstraints(d, I, opts);
     n := dim ring I;
     S := ring I;
