@@ -49,6 +49,12 @@ addHook((Hom, Module, Module), Strategy => Syzygies, (opts, M, N) -> (
     e := opts.DegreeLimit;
     -- TODO: any other cases which should be excluded?
     if e === null then return null;
+    -- when M is free, presentation M has no rows, so transpose presentation M ** N is
+    -- literally the zero matrix and Default's basicHom(M, N) = kernel(...) returns instantly
+    -- via the "g == 0" fast path in `kernel Matrix` (matrix1.m2), with no gb computation at
+    -- all, for any N -- giving the complete (not degree-truncated) answer at no extra cost.
+    -- Default is therefore always at least as good as this strategy in that case.
+    if isFreeModule M then return null;
     A := presentation M; (G, F) := (target A, source A); -- M <-- G <-- F
     B := presentation N; (L, K) := (target B, source B); -- N <-- L <-- K
     piN := inducedMap(N, L, generators N);
