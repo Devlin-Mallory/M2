@@ -110,11 +110,11 @@ checkDegrees(Module, Module) := Sequence => o -> (A,B) -> (
     Abar := A/(mm*A);
     Bbar := B/(mm*B);
     if numgens Abar != numgens Bbar then (
-		if v then <<"numbers of generators are different"<<endl;
+		if false and v then <<"numbers of generators are different"<<endl;
 	        return (false, null)
 	        );
     if not (isHomogeneous A and isHomogeneous B) then (
-                if v then <<"numbers of generators agree"<<endl;
+                if false and v then <<"numbers of generators agree"<<endl;
 		return (true,{"inhomogeneous"}));
 	    
 	dA := sort degrees Abar;
@@ -125,12 +125,12 @@ checkDegrees(Module, Module) := Sequence => o -> (A,B) -> (
         matches := all(degdiffs, s-> s == degdiffs_0);
         if matches then(
         	--now the degrees of the generators are equal.
-        if v and not isDegreeListZero degdiffs then 
+        if false and v and not isDegreeListZero degdiffs then 
 	       <<"To make the degree sequences equal, tensor "<<A<<"with ring " << A << "to " << {dA_0-dB_0} <<endl;
                return (true, dA_0-dB_0)
 	               );
 	        --now matches == false
-  	if v then <<"degree sequences don't match"<<endl;
+  	if false and v then <<"degree sequences don't match"<<endl;
 	(false, null)
     )
 checkDegrees(Matrix, Matrix) := Sequence => o-> (m,n) -> checkDegrees(target m, target n, o)
