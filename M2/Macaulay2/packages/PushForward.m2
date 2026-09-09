@@ -87,10 +87,11 @@ pushFwd(RingMap, Module) := Module => o -> (f, N) -> N.cache#(pushFwd, f, o) ??=
 
     A := source f;
     B := target f;
-    B' := B / ann N;
+    I := ann N;
+    B' := B / I;
     quot := map(B', B);
     g := quot * f;
-    (pfN, pfmat', pf) := makeModule(N ** B', g);
+    (pfN, pfmat', pf) := makeModule(N ** B', g, pushAuxHgsForAnnihilator(f, I));
 
     -- diagram chase
 
@@ -229,8 +230,13 @@ isModuleFinite RingMap := Boolean => (f) -> (
 --     A^k --> auxN (over B)
 --   and its kernel are the A-relations of the elements auxN
 makeModule = method()
-makeModule(Module, RingMap) := (N, f) -> (
-    (matB, ringpf) := pushAuxHgs(f);
+makeModule(Module, RingMap) := (N, f) -> makeModule(N, f, pushAuxHgs(f))
+-- variant taking a precomputed (matB, ringpf) pair (see pushAuxHgsForAnnihilator
+-- above pushAuxHgs below) so callers that already know pushAuxHgs's answer for
+-- this f -- e.g. because they cached it under a different, more stable key than
+-- f itself -- don't have to recompute it here.
+makeModule(Module, RingMap, Sequence) := (N, f, auxData) -> (
+    (matB, ringpf) := auxData;
 
 
     N = prune N;
@@ -374,6 +380,41 @@ pushFwdRingHelper = (f) -> (
     );
 
     (matB, mapf)
+)
+
+-- pushAuxHgs's own memoization (f.cache.pushAuxHgs ??= ..., below) only
+-- helps if the exact same RingMap object is handed back to it later, but
+-- pushFwd(RingMap,Module) always builds a fresh g := (map(B/ann N, B)) * f
+-- before calling it -- RingMap composition never returns an object sharing
+-- .cache with a previous composition, even from pointer-identical operands
+-- (verified directly: c1 = q*h; c2 = q*h; c1 === c2 is true, but mutating
+-- c1.cache is not visible via c2.cache, despite c1.cache === c2.cache also
+-- reporting true -- === here is a value comparison, not object identity),
+-- and B/I for a merely ==-equal (but not ===-identical) ideal I is not
+-- reliably the same ring object either (confirmed the same way). So pushing
+-- forward several different modules along the same f, whenever they share
+-- an annihilator (most commonly ann N = 0, but any repeated annihilator has
+-- the same issue), silently redid this expensive computation from scratch
+-- every time.
+--
+-- Cache explicitly instead, on the stable, always-reused ring B = target f
+-- (never rebuilt by this package the way B/I and RingMap compositions are),
+-- scanning previously-seen annihilators with == rather than trusting # to
+-- bucket them correctly -- ideals with equal == value are not necessarily
+-- hash-equal (confirmed: ideal(x,y) built twice, generators in a different
+-- order, are == but not === and do not hash equal), so a plain CacheTable
+-- keyed directly on the ideal would silently fail to merge them.
+pushAuxHgsForAnnihilator = (f, I) -> (
+    B := target f;
+    reg := B.cache#"pushAuxHgsCache" ??= new MutableHashTable;
+    bucket := reg#f ??= {};
+    hit := scan(bucket, entry -> if I == entry#0 then break entry#1);
+    if hit =!= null then hit
+    else (
+        result := pushAuxHgs((map(B/I, B)) * f);
+        reg#f = append(bucket, (I, result));
+        result
+    )
 )
 
 pushAuxHgs = method()
