@@ -698,10 +698,8 @@ inducedMap(Module,Module,Matrix) := Matrix => opts -> (N',M',f) -> (
      if opts.Verify then (
 	  if relations M % relations M' != 0 then error "inducedMap: expected new source not to have fewer relations";
 	  if relations N % relations N' != 0 then error "inducedMap: expected new target not to have fewer relations";
-	  -- gbM/gbN' are null exactly when M/N' are free modules (see the hook below); in that
-	  -- case their generators are the identity, so these checks hold automatically.
-	  if gbM  =!= null and generators M' % gbM != 0 then error "inducedMap: expected new source not to have more generators";
-	  if gbN' =!= null and g % gbN' != 0 then error "inducedMap: expected matrix to induce a map";
+	  if generators M' % gbM != 0 then error "inducedMap: expected new source not to have more generators";
+	  if g % gbN' != 0 then error "inducedMap: expected matrix to induce a map";
 	  if not isWellDefined f' then error "inducedMap: expected matrix to induce a well-defined map";
 	  );
      f')
@@ -711,16 +709,10 @@ inducedMap(Nothing,Nothing,Matrix) := o -> (M,N,f) -> inducedMap(target f,source
 addHook((inducedMap, Module, Module, Matrix), Strategy => Default, (opts, N', M', f) -> (
      N := target f;
      M := source f;
-     -- when M (resp. N') is a genuine free module, its generators are id_(ambient M) (resp.
-     -- id_(ambient N')) -- already, trivially, its own minimal Groebner basis with identity
-     -- change-of-basis matrix -- so computing gb(M, ChangeMatrix => true) and then dividing by
-     -- it is a very expensive (roughly quadratic in the rank) no-op; skip it in that case.
-     freeM  := isFreeModule M;
-     freeN' := isFreeModule N';
-     gbM  := if freeM  then null else gb(M,  ChangeMatrix => true);
-     gbN' := if freeN' then null else gb(N', ChangeMatrix => true);
-     g := generators N * cover f * (if freeM  then generators M' else generators M' // gbM);
-     f' := if freeN' then g else g // gbN';
+     gbM  := gb(M,  ChangeMatrix => true);
+     gbN' := gb(N', ChangeMatrix => true);
+     g := generators N * cover f * (generators M' // gbM);
+     f' := g // gbN';
      f' = map(N',M',f',Degree => if opts.Degree === null then degree f else opts.Degree);
      (f', g, gbN', gbM)))
 
