@@ -37,7 +37,7 @@ fSplittingHeight(Ideal) := ZZ => opts-> I0-> (
     v := product(A+1, i -> (S_i)^(p-1));
     u0 := map(S^1, FS, transpose(transformS(v)));
 
-    I := ideal ff^(p-1);
+    I := frobenius(1, I0) + ideal ff^(p-1);
     if not isSubset(I, MP) then return 1;
     if isSubset(ideal ff^(p-2), MP) then return infinity;
     if isSubset( (ideal(ff^(p-2)) + frobenius(1, I0)) * ff^(p*(p-2)) * Delta1(ff), frobenius(2, M)) then return infinity;
