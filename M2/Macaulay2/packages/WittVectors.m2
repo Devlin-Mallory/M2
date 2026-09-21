@@ -54,7 +54,7 @@ export{
 "PerturbationTerm",
 "findFrobeniusLiftConstraints",
 "findFrobeniusLift",
-"createEquations",
+"parametrizedLifts",
 "fSplittingHeight",
 "overring",
 "wittFrobenius",
