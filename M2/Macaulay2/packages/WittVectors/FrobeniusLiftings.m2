@@ -27,7 +27,7 @@ findFrobeniusLiftConstraints = method(Options => {PerturbationTerm => null, Homo
 
 findFrobeniusLiftConstraints(RingElement) := opts -> f -> findFrobeniusLiftConstraints(ideal f, opts)
 
-findFrobeniusLiftConstraints(Ring) := opts -> R -> findFrobeniusLiftConstraints(ideal 0_R, opts)
+findFrobeniusLiftConstraints(Ring) := opts -> R -> findFrobeniusLiftConstraints(ideal R, opts)
 
 findFrobeniusLiftConstraints(Ideal) := opts -> I -> (
     c := numgens I;
@@ -81,10 +81,10 @@ expandFrobeniusConstraints(ZZ, Ideal) := opts -> (d, J) -> (
     expand I
 )
 
-createEquations = method(Options => {Homogeneous => false, PerturbationTerm => null})
-createEquations(ZZ, Ring) := opts -> (d, R) -> createEquations(d, ideal R, opts)
-createEquations(ZZ, RingElement) := opts -> (d, f) -> createEquations(d, ideal f, opts)
-createEquations(ZZ, Ideal) := opts -> (d, I) -> (
+parametrizedLifts = method(Options => {Homogeneous => false, PerturbationTerm => null})
+parametrizedLifts(ZZ, Ring) := opts -> (d, R) -> parametrizedLifts(d, ideal R, opts)
+parametrizedLifts(ZZ, RingElement) := opts -> (d, f) -> parametrizedLifts(d, ideal f, opts)
+parametrizedLifts(ZZ, Ideal) := opts -> (d, I) -> (
     G := expandFrobeniusConstraints(d, I, opts);
     n := dim ring I;
     S := ring I;
