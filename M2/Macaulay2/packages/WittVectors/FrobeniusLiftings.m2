@@ -27,7 +27,7 @@ findFrobeniusLiftConstraints = method(Options => {PerturbationTerm => null, Homo
 
 findFrobeniusLiftConstraints(RingElement) := opts -> f -> findFrobeniusLiftConstraints(ideal f, opts)
 
-findFrobeniusLiftConstraints(Ring) := opts -> R -> findFrobeniusLiftConstraints(ideal 0_R, opts)
+findFrobeniusLiftConstraints(Ring) := opts -> R -> findFrobeniusLiftConstraints(ideal R, opts)
 
 findFrobeniusLiftConstraints(Ideal) := opts -> I -> (
     c := numgens I;
