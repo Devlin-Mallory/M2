@@ -168,9 +168,9 @@ TEST ///
 S = ZZ/2[x,y]
 I = ideal(x*y)
 J = ideal(0_S)
-assert(dim createEquations(2,I,Homogeneous=>true) > 0)
-assert(dim createEquations(2,I,Homogeneous=>true, PerturbationTerm=>{1}) < 0)
-assert(dim createEquations(2,0_S,Homogeneous=>true) > 0)
+assert(dim parametrizedLifts(2,I,Homogeneous=>true) > 0)
+assert(dim parametrizedLifts(2,I,Homogeneous=>true, PerturbationTerm=>{1}) < 0)
+assert(dim parametrizedLifts(2,0_S,Homogeneous=>true) > 0)
 ///
 
 --TEST 13
