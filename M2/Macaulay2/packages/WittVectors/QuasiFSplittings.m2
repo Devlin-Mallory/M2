@@ -54,7 +54,7 @@ fSplittingHeight(Ideal) := ZZ => opts-> I0-> (
         J := intersect(FI, kernel(u));
         JJ := inducedMap(FS, J);
         KK := image(u*K*JJ);
-        II := ideal(mingens KK) + ideal(ff^(p-1));
+        II := ideal(mingens KK) + frobenius(1, I0) + ideal ff^(p-1);
         if not isSubset(II, MP) then break return i;
         if I == II then break return infinity;
         I = II;
