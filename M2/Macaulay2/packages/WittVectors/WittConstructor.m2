@@ -261,7 +261,7 @@ explicit(WittIdeal) := I -> (
 
 trim (WittIdeal) := opts -> I -> (
     Iexp := trim explicit(I);
-    ggs := apply( flatten entries gens Iexp, wittOverringToTuple);
+    ggs := apply( flatten entries gens Iexp, wittRingToTuple);
     wittIdeal ggs
 )
 
