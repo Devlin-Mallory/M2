@@ -59,6 +59,21 @@ potModule Module := Module => M -> M.cache.potModule ??= (
 potPresentation = method()
 potPresentation Module := Matrix => M -> M.cache.presentation ??= presentation potModule M
 
+-- gb m computed position-over-term, cached on m under the key that a plain gb m
+-- (default options) looks up, so later gb m, basis, %, // etc. reuse it
+potGB = method()
+potGB Matrix := GroebnerBasis => m -> (
+    key := new GroebnerBasisOptions from { SyzygyRows => 0, Syzygies => false, HardDegreeLimit => null };
+    m.cache#key ??= gb potMatrix m)
+
+-- basis(..., M) with both Groebner bases it needs computed position-over-term:
+-- presentation M (cached in M.cache.presentation) and gb presentation M (cached
+-- on that matrix); basis itself then finds them in the usual places
+potBasis = method(Options => options basis)
+potBasis Module                := opts -> M -> (potGB potPresentation M; basis(M, opts))
+potBasis(Thing, Module)        := opts -> (d, M) -> (potGB potPresentation M; basis(d, M, opts))
+potBasis(Thing, Thing, Module) := opts -> (lo, hi, M) -> (potGB potPresentation M; basis(lo, hi, M, opts))
+
 M' = potModule M;
 elapsedTime presentation M';                 -- ~0.3s
 elapsedTime trim (M'**R^1);                  -- ~0.1s
@@ -72,6 +87,8 @@ assert((gens M * presentation M) % gb relations M == 0)
 assert(numerator hilbertSeries coker presentation M ==
     numerator hilbertSeries coker relations M
     - numerator hilbertSeries coker potMatrix(gens M | relations M))
+elapsedTime B = potBasis(5, M);              -- ~0.002s once the above is cached
+assert(numcols B == hilbertFunction(5, M))
 
 -----------------------------------------------------------------------------
 -- original (term-over-position) computations: each takes hours
